@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Images - LightGlue FastAPI App</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <h1>Upload Images for Feature Matching</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <div>
+            <button type="button" id="use_defaults_button">Use Default Images</button>
+        </div>
+        <input type="hidden" id="use_defaults" name="use_defaults" value="False">
+        <div id="upload_container">
+            <div>
+                <label for="file1">Image 1:</label>
+                <input type="file" id="file1" name="file1" accept="image/*" required>
+            </div>
+            <div>
+                <label for="file2">Image 2:</label>
+                <input type="file" id="file2" name="file2" accept="image/*" required>
+            </div>
+        </div>
+        <button type="submit">Match Features</button>
+        <div id="default_images" style="display: none;">
+            <h2>Default Images</h2>
+            <div class="images">
+                <img src="/static/assets/1.png" alt="Image 1">
+                <img src="/static/assets/2.png" alt="Image 2">
+            </div>
+        </div>
+    </form>
+
+    {% if matched %}
+    <h2>Matching Results</h2>
+    <p>Stopped after {{ stop_layers }} layers.</p>
+    <div class="images">
+        <img src="data:image/jpeg;base64,{{ image1 }}" alt="Image 1">
+        <img src="data:image/jpeg;base64,{{ image2 }}" alt="Image 2">
+    </div>
+    {% endif %}
+
+    <a href="/" class="button">Back to Home</a>
+
+<script>
+    document.getElementById('use_defaults_button').addEventListener('click', function() {
+        const uploadContainer = document.getElementById('upload_container');
+        const defaultImages = document.getElementById('default_images');
+        const file1Input = document.getElementById('file1');
+        const file2Input = document.getElementById('file2');
+        const useDefaultsInput = document.getElementById('use_defaults');
+
+        uploadContainer.style.display = 'none';
+        file1Input.required = false;
+        file2Input.required = false;
+
+        defaultImages.style.display = 'block';
+
+        useDefaultsInput.value = 'True';
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+
+/* app/static/styles.css */
+
+body {
+  font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    background-color: #333;
+    color: #fff;
+    padding: 20px 0;
+    margin: 0 0 20px 0;
+}
+
+.options {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+form {
+    display: inline-block;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+form div {
+    margin-bottom: 10px;
+}
+
+.images {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.images img {
+    max-width: 45%;
+    border: 2px solid #333;
+}
+
+.webcam img {
+    width: 80%;
+    border: 2px solid #333;
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input[type="file"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+input[type="file"]:hover {
+    background-color: #f0f0f0;
+}
+
+button[type="button"], button[type="submit"] {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: #fff;
+    cursor: pointer;
+}
+
+button[type="button"]:hover, button[type="submit"]:hover {
+    background-color: #3e8e41;
+}
+
+button[type="button"] {
+    margin-bottom: 20px;
+}
+
+#upload_container, #default_images {
+    margin-bottom: 20px;
+}
+
+button {
+    text-decoration: none;
+}
+
+.matching-results {
+    margin-top: 40px;
+}
+
+.matching-results h2 {
+    margin-bottom: 10px;
+}
+
+.matching-results p {
+    margin-bottom: 20px;
+}
+
+.matching-results img {
+    width: 40%;
+    margin: 10px;
+}

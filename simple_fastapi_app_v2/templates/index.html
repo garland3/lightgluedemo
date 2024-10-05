@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LightGlue Demo</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #videoElement, #capturedImage, #resultImage { 
+            width: 100%; 
+            max-width: 640px; 
+            margin-bottom: 10px;
+        }
+        button { 
+            margin: 10px 0; 
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        h1, h2 { 
+            text-align: center; 
+        }
+        #logContainer {
+            width: 100%;
+            max-width: 640px;
+            height: 200px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>LightGlue Demo</h1>
+    <video id="videoElement" autoplay></video>
+    <button id="captureButton">Capture Reference Image</button>
+    <button id="startStreamingButton">Start Streaming</button>
+    <button id="stopStreamingButton" style="display: none;">Stop Streaming</button>
+    <h2>Reference Image</h2>
+    <img id="capturedImage" style="display: none;">
+    <h2>Result</h2>
+    <img id="resultImage">
+    <div id="logContainer"></div>
+
+    <script>
+        let video = document.getElementById('videoElement');
+        let captureButton = document.getElementById('captureButton');
+        let startStreamingButton = document.getElementById('startStreamingButton');
+        let stopStreamingButton = document.getElementById('stopStreamingButton');
+        let capturedImage = document.getElementById('capturedImage');
+        let resultImage = document.getElementById('resultImage');
+        let logContainer = document.getElementById('logContainer');
+        let stream;
+        let ws;
+
+        function log(message) {
+            console.log(message);
+            logContainer.innerHTML += message + '<br>';
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(s) {
+                stream = s;
+                video.srcObject = stream;
+                log('Camera access granted');
+            }).catch(function(err) {
+                log("An error occurred accessing the camera: " + err);
+            });
+
+        captureButton.addEventListener('click', function() {
+            let canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            capturedImage.src = canvas.toDataURL('image/jpeg');
+            capturedImage.style.display = 'block';
+            log('Reference image captured');
+
+            // Send the captured image to the server
+            let formData = new FormData();
+            canvas.toBlob(function(blob) {
+                formData.append('image', blob, 'reference.jpg');
+                fetch('/set_reference', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.json())
+                  .then(data => log('Server response: ' + JSON.stringify(data)))
+                  .catch(error => log('Error setting reference image: ' + error));
+            }, 'image/jpeg');
+        });
+
+        startStreamingButton.addEventListener('click', function() {
+            if (capturedImage.src) {
+                ws = new WebSocket('ws://' + window.location.host + '/ws');
+                ws.onopen = function() {
+                    log('WebSocket connection opened');
+                    startStreamingButton.style.display = 'none';
+                    stopStreamingButton.style.display = 'inline-block';
+                    streamFrames();
+                };
+                ws.onmessage = function(event) {
+                    log('Received message from server');
+                    if (event.data.startsWith('data:image')) {
+                        resultImage.src = event.data;
+                        log('Updated result image');
+                    } else {
+                        log('Received message: ' + event.data);
+                    }
+                };
+                ws.onerror = function(error) {
+                    log('WebSocket error: ' + error);
+                };
+                ws.onclose = function() {
+                    log('WebSocket connection closed');
+                    startStreamingButton.style.display = 'inline-block';
+                    stopStreamingButton.style.display = 'none';
+                };
+            } else {
+                log('Please capture a reference image first.');
+                alert('Please capture a reference image first.');
+            }
+        });
+
+        stopStreamingButton.addEventListener('click', function() {
+            if (ws) {
+                ws.close();
+                log('Streaming stopped');
+            }
+            startStreamingButton.style.display = 'inline-block';
+            stopStreamingButton.style.display = 'none';
+        });
+
+        function streamFrames() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                let canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                ws.send(canvas.toDataURL('image/jpeg'));
+                log('Frame sent to server');
+                setTimeout(streamFrames, 1000);  // Increased delay to 1 second for debugging
+            }
+        }
+    </script>
+</body>
+</html>
